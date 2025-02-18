@@ -20,14 +20,28 @@ The polemnic why Rust is more efficient than Python at a high level, amounts to:
 4. **Low-Level Access**: Rust provides low-level control over hardware and memory, allowing better optimization for performance-critical tasks.
 5. **Zero-Cost Abstractions**: Rust’s abstractions do not introduce performance penalties, unlike Python, which can incur overhead with higher-level constructs.
 
+## Components
 
-## Installation
+### AWS
 
-TBD
+ - [Amazon Lambda](https://aws.amazon.com/lambda/)
+ - [Amazon Bedrock](https://aws.amazon.com/bedrock/)
+ - 
 
-## Runing the Programs
+### Rust Ecosystem
 
-TBD
+ - [crates.io](https://crates.io)
+ - [cargo](https://doc.rust-lang.org/cargo/)
+ - [cargo lambda](https://www.cargo-lambda.info/)
+
+## Installation and Running the programs
+
+### `vectordb_stuff`
+
+
+### `lambda_stuff`
+
+
 
 
 
