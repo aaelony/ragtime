@@ -1,23 +1,22 @@
 mod cli;
 mod embeddings;
 mod pdftools;
-mod vectordb;
+
 use anyhow::Result;
+use common::vectordb::VectorDb;
 use embeddings::create_embeddings;
 use pdftools::{extract_text_from_pdf, get_pdf_filenames};
 use serde_json::Value;
-use vectordb::VectorDb;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = cli::parse_args();
-
-    let vdb_client = VectorDb::new("embeddings.db")?;
+    let vdb_client = VectorDb::new()?;
 
     // Mode 1:
     //   Step 1: Reset the vector database.  --clear_database
     if cli.clear_database {
-        println!("Clearing database...");
+        println!("Clearing local database...");
         vdb_client.drop_embeddings_table()?;
     }
 
@@ -27,11 +26,12 @@ async fn main() -> Result<()> {
     //  Step 3: Add PDF documents to the vector database
     //  Step 4: Ready to search for similar documents and use the lambda.
     if cli.load_documents {
-        println!("Loading documents...");
+        println!("Loading documents into local database...");
         let pdf_dir = "pdfs".to_string();
         let embeddings_model_name = "amazon.titan-embed-text-v2:0".to_string();
         let pdf_filenames = get_pdf_filenames(pdf_dir);
         let mut parsed_pdf_files = Vec::new();
+        vdb_client.create_embeddings_table()?;
 
         for (i, pdf_filepath) in pdf_filenames.iter().enumerate() {
             println!(
@@ -42,7 +42,6 @@ async fn main() -> Result<()> {
             );
             let parsed_pdf = extract_text_from_pdf(pdf_filepath.as_str())?;
             parsed_pdf_files.push(parsed_pdf.clone());
-            vdb_client.create_embeddings_table()?;
 
             println!("Preparing to add documents to vector database...");
             for chunk in &parsed_pdf.chunks {
@@ -63,6 +62,8 @@ async fn main() -> Result<()> {
                 vdb_client.insert_embedding(&chunk, &embedding_vec, None)?;
             } // end for loop that creates embeddings from text chunks and inserts into db
         } // end for loop pdf filenames
+          // Copy the embeddings database to S3
+        vdb_client.push_to_s3().await?;
     }
 
     Ok(())

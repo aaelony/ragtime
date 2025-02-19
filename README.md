@@ -1,6 +1,6 @@
 # ragtime
 
-## Why this Project
+## Why this Project?
 
 I wanted to start putting together a portfolio of public showcase/demo projects in various domains and I was inspired by the Python project [deploy-rag-to-aws](https://github.com/pixegami/deploy-rag-to-aws) by [pixegami](https://github.com/pixegami). His project is intuitive, well-designed, and puts together an advanced use of AWS Lambda functions to call Amazon Bedrock LLMs to answer questions tailored to information only present in local PDF files.  
 
@@ -20,13 +20,36 @@ The polemnic why Rust is more efficient than Python at a high level, amounts to:
 4. **Low-Level Access**: Rust provides low-level control over hardware and memory, allowing better optimization for performance-critical tasks.
 5. **Zero-Cost Abstractions**: Rust’s abstractions do not introduce performance penalties, unlike Python, which can incur overhead with higher-level constructs.
 
+
+## What is RAG?
+
+[Retrieval Augmented Generation](https://en.wikipedia.org/wiki/Retrieval-augmented_generation) (RAG) is a way of leveraging Supervised [Fine-Tuning](https://en.wikipedia.org/wiki/Fine-tuning_(deep_learning)) (SFT) 
+
+The idea is that we can use a pre-trained LLM but fine-tune it so it can answer questions from ancillary material.
+
+In our case, you can put PDF files in `pdfs` directory at the same level as the `src` directory, and those PDF files will be read, processed and chunked such that embeddings can be created. The embeddings will then be loaded in to a vector database capable of assessing similarity. This is a bit tricky because an AWS lambda is serverless and only has a writable `/tmp` directory at runtime.  We leverage an S3 bucket to store the embeddings from the PDFs and download it for use by the lambda.
+
+When a user submits a question, embeddings for the question are created in the same manner as for the PDF files, and compared for similarity.  Similar records are retrieved and add to the prompt that includes the question for submission to the Large Language Model.
+
+RAG is akin to the concept of "leading the witness".
+
+To illustrate, here is a question the LLM was not trained on and cannot possibly know the answer.
+<img src="png/no-rag-answer-galaxy-design.png" width="600" height="500" />
+
+Here would be the answer if we inserted context containing the answer into the prompt:
+<img src="png/fake-rag-answer-galaxy-design.png" width="600" height="500" />
+
+And here is the answer with Retrieval Augmented Generation (RAG):
+TODO!
+
+
 ## Components
 
 ### AWS
 
  - [Amazon Lambda](https://aws.amazon.com/lambda/)
  - [Amazon Bedrock](https://aws.amazon.com/bedrock/)
- - 
+ - [Amazon S3](https://aws.amazon.com/s3/)
 
 ### Rust Ecosystem
 

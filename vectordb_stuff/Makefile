@@ -1,4 +1,5 @@
 
+export S3_BUCKET_NAME=ragtime-bucket
 
 help:
 	cargo run -- --help

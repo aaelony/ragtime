@@ -1,4 +1,6 @@
 
+export S3_BUCKET_NAME=ragtime-bucket
+
 build:
 	cargo lambda build --release
 	ls -hl target/lambda/lambda_stuff/bootstrap

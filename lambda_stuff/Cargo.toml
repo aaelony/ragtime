@@ -24,5 +24,4 @@ clap = { version = "4.5.30", features = ["derive"] }
 pdf-extract = "0.8.2"
 regex = "1.11.1"
 aws-sdk-s3 = { version = "1.76.0", features = ["behavior-version-latest"] }
-
-
+common = { path = "../common" }

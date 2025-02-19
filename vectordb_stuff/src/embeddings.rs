@@ -9,7 +9,7 @@ use serde_json::{json, Value};
 
 pub async fn create_embeddings(question: &str, model_name: &str) -> anyhow::Result<Value> {
     let config = aws_config::load_from_env().await;
-    let client = Client::new(&config);
+    let bedrock_client = Client::new(&config);
 
     let input_json = json!({
         "inputText": question
@@ -17,7 +17,7 @@ pub async fn create_embeddings(question: &str, model_name: &str) -> anyhow::Resu
 
     let input_bytes = serde_json::to_vec(&input_json)?;
 
-    let response = client
+    let response = bedrock_client
         .invoke_model()
         .body(Blob::new(input_bytes))
         .model_id(model_name)

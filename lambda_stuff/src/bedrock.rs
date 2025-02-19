@@ -1,5 +1,4 @@
 // use aws_config::BehaviorVersion;
-use crate::vectordb::VectorDb;
 use anyhow::{Error, Result};
 use aws_sdk_bedrockruntime::Client as BedrockClient;
 use aws_sdk_bedrockruntime::{
@@ -9,6 +8,7 @@ use aws_sdk_bedrockruntime::{
 use aws_sdk_s3::Client as S3Client;
 use aws_smithy_types::Blob;
 use chrono;
+use common::vectordb::VectorDb;
 // use lambda_runtime::Error;
 use serde_json::{json, Value};
 use std::env;
@@ -105,6 +105,12 @@ pub async fn ask_bedrock(
     let s3_bucket = env::var("S3_BUCKET_NAME")
         .map_err(|_| Error::msg("S3_BUCKET_NAME environment variable not set"))?;
     let s3_key = "embeddings/embeddings.db";
+
+    if !VectorDb::is_local() {
+        let vdb_client = VectorDb::new_from_s3_to_local(&s3_client, &s3_bucket, s3_key).await?;
+    } else {
+        let vdb_client = VectorDb::new_local("embeddings.db")?;
+    }
     let vdb_client = VectorDb::new(&s3_client, &s3_bucket, s3_key).await?;
 
     // TODO: assess similarity of question_embeddings to other embeddings in the database
