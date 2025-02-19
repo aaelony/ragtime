@@ -1,17 +1,18 @@
 // use aws_config::BehaviorVersion;
-use anyhow::{Error, Result};
+use anyhow::Result;
 use aws_sdk_bedrockruntime::Client as BedrockClient;
 use aws_sdk_bedrockruntime::{
     operation::converse::{ConverseError, ConverseOutput},
     types::{ContentBlock, ConversationRole, Message},
 };
-use aws_sdk_s3::Client as S3Client;
-use aws_smithy_types::Blob;
+//use aws_sdk_s3::Client as S3Client;
+// use aws_smithy_types::Blob;
 use chrono;
+use common::embeddings::create_embeddings;
 use common::vectordb::VectorDb;
 // use lambda_runtime::Error;
-use serde_json::{json, Value};
-use std::env;
+use serde_json::json;
+// use std::env;
 
 // based on examples found here: https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/rustv1/examples/bedrock-runtime/src/bin/converse.rs
 
@@ -56,39 +57,11 @@ fn get_converse_output_text(output: ConverseOutput) -> Result<String, BedrockCon
     Ok(text.to_string())
 }
 
-pub struct QueryModel {
-    pub question_text: Option<String>,
-    pub answer_text: Option<String>,
-    // utc_created_at: Datetime<Utc>,
-}
-
-pub async fn create_embeddings(
-    question: &str,
-    model_name: &str,
-) -> Result<Value, Box<dyn std::error::Error + Send + Sync>> {
-    let config = aws_config::load_from_env().await;
-    let bedrock_client = BedrockClient::new(&config);
-
-    let input_json = json!({
-        "inputText": question
-    });
-
-    let input_bytes = serde_json::to_vec(&input_json)?;
-
-    let response = bedrock_client
-        .invoke_model()
-        .body(Blob::new(input_bytes))
-        .model_id(model_name)
-        .content_type("application/json")
-        .accept("application/json")
-        .send()
-        .await?;
-
-    let response_body = response.body.as_ref();
-    let embeddings: Value = serde_json::from_slice(response_body)?;
-
-    Ok(embeddings)
-}
+// pub struct QueryModel {
+//     pub question_text: Option<String>,
+//     pub answer_text: Option<String>,
+//     // utc_created_at: Datetime<Utc>,
+// }
 
 // Ask Bedrock a question for the LLM to answer
 pub async fn ask_bedrock(
@@ -99,24 +72,39 @@ pub async fn ask_bedrock(
     let config = aws_config::load_from_env().await;
     let bedrock_client = BedrockClient::new(&config); // bedrock client
 
-    let question_embeddings = create_embeddings(question, embeddings_model_name).await?;
+    // let embeddings_value = create_embeddings(&question, model_name).await?;
+    // println!(
+    //     "Raw embeddings: {}",
+    //     serde_json::to_string_pretty(&embeddings_value)?
+    // );
+    // // Convert Value to Vec<f32>
+    // let question_embeddings: Vec<f32> = embeddings_value["embedding"] // or whatever the correct field name is
+    //     .as_array()
+    //     .ok_or_else(|| anyhow::anyhow!("Invalid embedding format"))?
+    //     .iter()
+    //     .map(|v| {
+    //         v.as_f64()
+    //             .ok_or_else(|| anyhow::anyhow!("Invalid number in embedding"))
+    //             .map(|f| f as f32)
+    //     })
+    //     .collect::<Result<Vec<f32>, _>>()?;
 
-    let s3_client = S3Client::new(&config);
-    let s3_bucket = env::var("S3_BUCKET_NAME")
-        .map_err(|_| Error::msg("S3_BUCKET_NAME environment variable not set"))?;
-    let s3_key = "embeddings/embeddings.db";
+    let use_local_db = false; // Setting this to false will download the embeddings from S3 and use them locally.
+    let vdb_client = VectorDb::new(use_local_db).await?;
+    // Assess similarity of question_embeddings to other embeddings in the database
 
-    if !VectorDb::is_local() {
-        let vdb_client = VectorDb::new_from_s3_to_local(&s3_client, &s3_bucket, s3_key).await?;
-    } else {
-        let vdb_client = VectorDb::new_local("embeddings.db")?;
-    }
-    let vdb_client = VectorDb::new(&s3_client, &s3_bucket, s3_key).await?;
+    // let similar_texts = vdb_client.search_similar(&question_embeddings, 5)?; // Top 5.
+    // println!("question: {}", question);
+    // println!("Similar texts: {:?}", similar_texts);
 
-    // TODO: assess similarity of question_embeddings to other embeddings in the database
-    // TODO: Add similarity hits from the data
-
+    // TODO: Add similarity hits to the prompt.
     let prompt = format!("Human: {}\n\nAssistant: ", question);
+    // let prompt = format!(
+    //     "Human: Context ({}), {}\n\nAssistant: ",
+    //     similar_texts.join("\n--\n"),
+    //     question
+    // );
+
     let prompt_clone = prompt.clone();
 
     let response_output = bedrock_client

@@ -1,10 +1,45 @@
 # ragtime
 
+
+## The Idea
+
+This project implements use of an LLM from the Amazon Bedrock Marketplace such that the user can ask the model a question.  It is implemented as an AWS serverless Lambda written in Rust. The idea is to tailor LLM responses to proprietary data in PDFs on an as-needed basis by 
+
+
+
 ## Why this Project?
 
-I wanted to start putting together a portfolio of public showcase/demo projects in various domains and I was inspired by the Python project [deploy-rag-to-aws](https://github.com/pixegami/deploy-rag-to-aws) by [pixegami](https://github.com/pixegami). His project is intuitive, well-designed, and puts together an advanced use of AWS Lambda functions to call Amazon Bedrock LLMs to answer questions tailored to information only present in local PDF files.  
+I wanted to start putting together a portfolio of ambitious public showcase/demo projects in various domains and I was inspired by the Python project [deploy-rag-to-aws](https://github.com/pixegami/deploy-rag-to-aws) by [pixegami](https://github.com/pixegami). His python project is intuitive, well-designed, and puts together an advanced use of AWS Lambda functions to call Amazon Bedrock LLMs to answer questions tailored to information only present in local PDF files.
 
 This project aims to re-implement the RAG architecture project but using the Rust language.
+
+### Current Status: 
+
+ - [X] DONE: AWS Lambda that communicates with LLM via AWS Bedrock
+ - [X] DONE: Ability to read, parse, chunk, compute and store embeddings into a local database.
+ - [ ] TODO: Retrieval of document embeddings to compare for similarity with a user question for RAG implementation 
+
+Enhancements to come...
+
+
+## Details
+
+The `ragtime` project has 2 components and 3 subdirectories:
+
+ 1. [vectordb_stuff](vectordb_stuff/README.md) - containing PDF document processing and the embeddings database.
+ 2. [lambda_stuff](lambda_stuff/README.md) - AWS lambda handler function.
+ 3. [common](common/README.md) - code that is shared by the 2 components above.
+
+
+### vectordb_stuff
+
+vectordb_stuff ontains a standalone Rust program that creates a database from PDF files in the `pdfs` directory. The program reads the PDF files, processes them, and creates embeddings that are stored in a database.
+
+
+ AWS Lambda builds, deploys, and runs. `cd lambda_stuff; make build; make deploy_on_aws_lambda;` Then go to the AWS console and get the Lambda URL, add `?question_text="What is the capital of France?"` to the end of the URL and you should get a response. This shows the ability invoke the Lambda function and make a call to Amazon Bedrock.
+- [ ] VectorDB
+
+
 
 ## Why Rust?
 
@@ -23,7 +58,8 @@ The polemnic why Rust is more efficient than Python at a high level, amounts to:
 
 ## What is RAG?
 
-[Retrieval Augmented Generation](https://en.wikipedia.org/wiki/Retrieval-augmented_generation) (RAG) is a way of leveraging Supervised [Fine-Tuning](https://en.wikipedia.org/wiki/Fine-tuning_(deep_learning)) (SFT) 
+
+[Retrieval Augmented Generation](https://en.wikipedia.org/wiki/Retrieval-augmented_generation) (RAG) is a way of leveraging Supervised [Fine-Tuning](https://en.wikipedia.org/wiki/Fine-tuning_(deep_learning)) (SFT)
 
 The idea is that we can use a pre-trained LLM but fine-tune it so it can answer questions from ancillary material.
 
@@ -63,8 +99,3 @@ TODO!
 
 
 ### `lambda_stuff`
-
-
-
-
-

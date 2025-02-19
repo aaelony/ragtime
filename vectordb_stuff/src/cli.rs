@@ -1,4 +1,4 @@
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 
 #[derive(Parser)]
 #[command(author,
@@ -16,5 +16,10 @@ pub struct Cli {
 }
 
 pub fn parse_args() -> Cli {
-    Cli::parse()
+    let cli = Cli::parse();
+    if !cli.clear_database && !cli.load_documents {
+        Cli::command().print_help().unwrap();
+        std::process::exit(1);
+    }
+    cli
 }

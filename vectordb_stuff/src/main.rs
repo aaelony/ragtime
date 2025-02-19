@@ -1,17 +1,16 @@
 mod cli;
-mod embeddings;
 mod pdftools;
 
 use anyhow::Result;
+use common::embeddings::create_embeddings;
 use common::vectordb::VectorDb;
-use embeddings::create_embeddings;
 use pdftools::{extract_text_from_pdf, get_pdf_filenames};
-use serde_json::Value;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = cli::parse_args();
-    let vdb_client = VectorDb::new()?;
+    let use_local_db = true;
+    let vdb_client = VectorDb::new(use_local_db).await?;
 
     // Mode 1:
     //   Step 1: Reset the vector database.  --clear_database

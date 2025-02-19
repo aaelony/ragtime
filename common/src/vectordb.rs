@@ -1,28 +1,41 @@
-use anyhow::{anyhow, Context, Error, Result};
+use anyhow::{Context, Error, Result};
 // use aws_config::meta::region::RegionProviderChain;
 use aws_sdk_s3::Client as S3Client;
+use bytes::Bytes;
+use lambda_http::{Body, Request, Response};
 use rusqlite::Connection; // Result
 use serde_json::Value;
 use std::env;
 use std::path::Path;
 use tokio::fs::File;
-use tokio::io::AsyncReadExt;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 pub struct VectorDb {
     conn: Connection,
     local_path: String,
     s3_bucket: String,
     s3_key: String,
-    prefer_local: bool,
 }
 
 /// new() will create a new VectorDb instance with a connection to the local SQLite database.
 impl VectorDb {
-    pub fn new() -> Result<Self, anyhow::Error> {
+    pub async fn new(prefer_local: bool) -> Result<Self, anyhow::Error> {
         let local_path = String::from("/tmp/embeddings.db");
         let s3_bucket = env::var("S3_BUCKET_NAME")
             .map_err(|_| Error::msg("S3_BUCKET_NAME environment variable not set"))?;
         let s3_key = String::from("embeddings/embeddings.db");
+
+        let should_download = !prefer_local || !Path::new(&local_path).exists();
+
+        if should_download {
+            println!("Downloading embeddings database from S3...");
+            Self::download_from_s3(&local_path, &s3_bucket, &s3_key)
+                .await
+                .context("Failed to download database from S3")?;
+        } else {
+            println!("Using existing local database");
+        }
+
         println!("Connecting to vector database at: {}", local_path);
         let conn = Connection::open(local_path.clone())?;
         Ok(VectorDb {
@@ -30,7 +43,6 @@ impl VectorDb {
             local_path,
             s3_bucket,
             s3_key,
-            prefer_local: true,
         })
     }
 
@@ -60,6 +72,50 @@ impl VectorDb {
             .send()
             .await
             .context("Failed to upload file to S3")?;
+
+        Ok(())
+    }
+
+    pub async fn download_from_s3(local_path: &str, s3_bucket: &str, s3_key: &str) -> Result<()> {
+        let config = aws_config::load_from_env().await;
+        let s3_client = S3Client::new(&config);
+
+        // Get object from S3
+        let response = s3_client
+            .get_object()
+            .bucket(s3_bucket)
+            .key(s3_key)
+            .send()
+            .await
+            .with_context(|| {
+                format!(
+                    "Failed to get object from S3: bucket={}, key={}",
+                    s3_bucket, s3_key
+                )
+            })?;
+
+        // Read the response body
+        let body = response.body;
+        let data: Bytes = body
+            .collect()
+            .await
+            .context("Failed to read S3 response body")?
+            .into_bytes();
+
+        if let Some(parent) = std::path::Path::new(local_path).parent() {
+            tokio::fs::create_dir_all(parent).await.with_context(|| {
+                format!("Failed to create parent directories for {}", local_path)
+            })?;
+        }
+
+        // Write to local file
+        let mut file = File::create(local_path)
+            .await
+            .with_context(|| format!("Failed to create local file: {}", local_path))?;
+
+        file.write_all(&data)
+            .await
+            .with_context(|| format!("Failed to write data to file: {}", local_path))?;
 
         Ok(())
     }
@@ -107,6 +163,13 @@ impl VectorDb {
         }
     }
 
+    pub fn count_embeddings(&self) -> Result<i64> {
+        let count = self
+            .conn
+            .query_row("SELECT COUNT(*) FROM embeddings", [], |row| row.get(0))?;
+        Ok(count)
+    }
+
     pub fn insert_embedding(
         &self,
         text: &str,
@@ -130,11 +193,7 @@ impl VectorDb {
         Ok(self.conn.last_insert_rowid())
     }
 
-    pub fn search_similar(
-        &self,
-        query_embedding: &[f32],
-        limit: usize,
-    ) -> Result<Vec<(String, f32)>> {
+    pub fn search_similar(&self, query_embedding: &[f32], limit: usize) -> Result<Vec<String>> {
         let mut stmt = self
             .conn
             .prepare("SELECT text, embedding FROM embeddings")?;
@@ -167,7 +226,8 @@ impl VectorDb {
         results.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
         results.truncate(limit);
 
-        Ok(results)
+        // Return only the strings
+        Ok(results.into_iter().map(|(text, _)| text).collect())
     }
 } // end of VectorDb impl
 
@@ -176,4 +236,17 @@ pub fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
     let norm_a: f32 = a.iter().map(|x| x * x).sum::<f32>().sqrt();
     let norm_b: f32 = b.iter().map(|x| x * x).sum::<f32>().sqrt();
     dot_product / (norm_a * norm_b)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*; // Import everything from the parent module
+
+    #[test]
+    fn test_basic_functionality() {
+        //let use_local_db = true;
+        //let vdb_client = VectorDb::new(use_local_db).await?;
+        //vdb_client.search_similar(question_embeddings, 5);
+        // assert_eq!(2 + 2, 4);
+    }
 }

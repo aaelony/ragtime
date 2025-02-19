@@ -17,7 +17,7 @@ run: build
 	cargo run
 
 clear_database:
-	cargo run -- --clear-database
+	time cargo run -- --clear-database
 
 load_documents:
-	cargo run -- --load-documents
+	time cargo run -- --load-documents

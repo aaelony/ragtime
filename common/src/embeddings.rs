@@ -1,10 +1,11 @@
-use anyhow::Result;
+// use anyhow::Result;
 use aws_sdk_bedrockruntime::primitives::Blob;
 use aws_sdk_bedrockruntime::{
     // operation::converse::{ConverseError, ConverseOutput},
     // types::{ContentBlock, ConversationRole, Message},
     Client,
 };
+use lambda_http::{Body, Error, Request, Response};
 use serde_json::{json, Value};
 
 pub async fn create_embeddings(question: &str, model_name: &str) -> anyhow::Result<Value> {
@@ -28,6 +29,7 @@ pub async fn create_embeddings(question: &str, model_name: &str) -> anyhow::Resu
 
     let response_body = response.body.as_ref();
     let embeddings: Value = serde_json::from_slice(response_body)?;
+    println!("embeddings: {:?}", embeddings);
 
     Ok(embeddings)
 }
