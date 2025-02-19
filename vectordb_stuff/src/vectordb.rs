@@ -53,7 +53,7 @@ impl VectorDb {
         text: &str,
         embedding: &[f32],
         metadata: Option<&Value>,
-    ) -> rusqlite::Result<i64> {
+    ) -> Result<i64> {
         let embedding_bytes: Vec<u8> = unsafe {
             std::slice::from_raw_parts(
                 embedding.as_ptr() as *const u8,

@@ -1,27 +1,69 @@
 use crate::bedrock::ask_bedrock;
 use anyhow::Result;
-use chrono::{DateTime, Utc};
+use aws_config::from_env;
+use aws_sdk_s3::Client;
+// use chrono::{DateTime, Utc};
 use lambda_http::{Body, Error, Request, RequestExt, Response};
 use serde_json::{json, Value};
+use std::env;
+use std::path::Path;
+use tokio::fs;
 
 fn clean_text(text: &str) -> String {
     let new_string: String = text.replace("\n", "<p/>").to_string();
     new_string
 }
 
+async fn upload_embeddings_to_s3(
+    db_path: &Path,
+    s3_client: &Client,
+    s3_bucket: &str,
+    s3_key: &str,
+) -> Result<(), Error> {
+    // let s3_bucket = "your-bucket-name";
+    // let s3_key = "embeddings/embeddings.db";
+
+    // Check if file exists
+    if !db_path.exists() {
+        return Err(Error::from("Embeddings database file not found"));
+    }
+
+    // Read the file
+    let data = fs::read(db_path)
+        .await
+        .map_err(|e| Error::from(format!("Failed to read embeddings file: {}", e)))?;
+
+    // Upload to S3
+    s3_client
+        .put_object()
+        .bucket(s3_bucket)
+        .key(s3_key)
+        .body(data.into())
+        .send()
+        .await
+        .map_err(|e| Error::from(format!("Failed to upload to S3: {}", e)))?;
+
+    tracing::info!("Successfully uploaded embeddings database to S3");
+    Ok(())
+}
+
 /// This is the main body for the AWS Lambda function.
 pub(crate) async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
-    // Extract some useful information from the request
-    // let who = event
-    //     .query_string_parameters_ref()
-    //     .and_then(|params| params.first("name"))
-    //     .unwrap_or("world");
-    // let message = format!("Hello {who}, this is an AWS Lambda HTTP request");
-    //
     // let aws_region = "us-west-2";
     let embeddings_model_name = "amazon.titan-embed-text-v2:0";
     let model_name = "anthropic.claude-3-5-haiku-20241022-v1:0";
     let query = event.query_string_parameters();
+
+    let vectordb_path = Path::new("../vectordb_stuff/embeddings.db");
+    let config = aws_config::load_from_env().await;
+    let s3_client = Client::new(&config);
+
+    let s3_bucket = env::var("S3_BUCKET_NAME")
+        .map_err(|_| Error::from("S3_BUCKET_NAME environment variable not set"))?;
+    let s3_key = "embeddings/embeddings.db";
+
+    println!("About to upload embeddings to S3 {s3_bucket}/{s3_key}");
+    upload_embeddings_to_s3(vectordb_path, &s3_client, &s3_bucket, s3_key).await?;
 
     let (question_text, answer) = match query.first("question_text") {
         Some(question_text) => {

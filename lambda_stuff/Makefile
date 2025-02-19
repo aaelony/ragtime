@@ -12,7 +12,7 @@ watch:
 	cargo lambda watch
 
 deploy_on_aws_lambda: build
-	cargo lambda deploy --enable-function-url  ## --iam-role IAMROLE
+	cargo lambda deploy --enable-function-url  --env-var S3_BUCKET_NAME=ragtime-bucket  ## --iam-role IAMROLE
 
 test_curl_question:
 	curl -v -G "http://localhost:9000" --data-urlencode "question_text=What is the capital of California?"

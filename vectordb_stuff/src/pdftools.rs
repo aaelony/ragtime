@@ -1,10 +1,9 @@
-use anyhow::{Context, Result};
+// use anyhow::{Context, Result};
 
 use pdf_extract;
 use regex::Regex;
-use serde_json::json;
 use std::fs;
-use std::io::{self, Read};
+use std::io::{self};
 use std::path::{Path, PathBuf};
 
 pub fn get_pdf_filenames(directory: String) -> Vec<String> {
@@ -31,7 +30,7 @@ pub fn get_pdf_filenames(directory: String) -> Vec<String> {
     pdf_files
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ParsedPdf {
     pub filename: String,
     pub contents: String,
