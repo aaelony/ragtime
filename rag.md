@@ -9,12 +9,12 @@ In our case, you can put PDF files in the `vector_db/pdfs` directory, and those 
 
 When a user submits a question, embeddings for the question are created in the same manner as for the PDF files, and compared for similarity.  Similar records are retrieved and add to the prompt that includes the question for submission to the Large Language Model.
 
-RAG is akin to the concept of "leading the witness".
+RAG is akin to the concept of "leading the witness" via adding context to a question.
 
-To illustrate, here is a question the LLM was not trained on and cannot possibly know the answer.
+To illustrate, here is a question the LLM was not trained on and cannot possibly know the answer.  The LLM apologizes that it doesn't know the answer (though it is remarkable that it doesn't give a false, hallucinated response).
 <img src="png/no-rag-answer-galaxy-design.png" />
 
-Here would be the answer if we inserted context containing the answer into the prompt:
+If we insert context containing the answer into the prompt, the same LLM is able to answer correctly. 
 <img src="png/context-provided-to-llm.png" />
 
 
