@@ -38,7 +38,7 @@ Notable that an author of the Oreilly book [Python for Devops](https://pythondev
  - [X] DONE: AWS Lambda that communicates with LLM via AWS Bedrock
  - [X] DONE: Ability to read, parse, chunk, compute and store embeddings into a local database.
  - [ ] TODO: (50% DONE) RAG Retrieval of document embeddings to compare for similarity with a user question and provide context for the prompt.
-
+ - [ ] TODO: More tests, polish, and possibly a UI.
 
 
 
