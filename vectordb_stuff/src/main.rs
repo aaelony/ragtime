@@ -42,6 +42,10 @@ async fn main() -> Result<()> {
             let parsed_pdf = extract_text_from_pdf(pdf_filepath.as_str())?;
             parsed_pdf_files.push(parsed_pdf.clone());
 
+            // parsed_pdf.chunks
+            // parsed_pdf.filename
+            // parsed_pdf.contents
+
             println!("Preparing to add documents to vector database...");
             for chunk in &parsed_pdf.chunks {
                 let embeddings = create_embeddings(chunk, &embeddings_model_name).await?;
@@ -54,6 +58,7 @@ async fn main() -> Result<()> {
                     .map(|v| v.as_f64().unwrap_or_default() as f32)
                     .collect();
 
+                // TODO: Create a record with the filename, chunk, and embedding
                 println!(
                     "Inserting embedding {:?} for {} into database...",
                     embedding_vec, chunk

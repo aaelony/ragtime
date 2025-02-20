@@ -5,7 +5,7 @@ use aws_sdk_bedrockruntime::{
     // types::{ContentBlock, ConversationRole, Message},
     Client,
 };
-use lambda_http::{Body, Error, Request, Response};
+// use lambda_http::{Body, Error, Request, Response};
 use serde_json::{json, Value};
 
 pub async fn create_embeddings(question: &str, model_name: &str) -> anyhow::Result<Value> {
