@@ -13,7 +13,10 @@ For example, you may have ancillary or proprietary information in PDF files that
 
 On an as-needed basis, you can add PDF files to the [vectordf_stuff/pdfs](vectordb_stuff/pdfs) directory and the `vectordb_stuff` code will read the data, preprocess chunked text, and use Amazon Bedrock to create embeddings that are stored in a vector database. When a user asks a question, the question is processed and embeddings are created and compared to the embeddings in the database. The most similar embeddings are retrieved and added to the prompt for context that is sent to the LLM.
 
-Note, you must enable authorization for the LLM you choose ahead of running the code.
+Notes:
+ - You must enable authorization for the LLM you choose ahead of running the code.
+ - Your default AWS configuration will be used for authentication.
+ - You will need to enable permissions for S3, Lambda, and Bedrock.
 
 ## Why this Project?
 
