@@ -12,9 +12,9 @@ When a user submits a question, embeddings for the question are created in the s
 RAG is akin to the concept of "leading the witness".
 
 To illustrate, here is a question the LLM was not trained on and cannot possibly know the answer.
-<img src="png/no-rag-answer-galaxy-design.png" width="600" height="500" />
+<img src="png/no-rag-answer-galaxy-design.png" width="700" height="500" />
 
 Here would be the answer if we inserted context containing the answer into the prompt:
-<img src="png/context-provided-to-llm.png" width="600" height="500" />
+<img src="png/context-provided-to-llm.png" width="700" height="500" />
 
 
