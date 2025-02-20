@@ -1,4 +1,4 @@
-
+# Important to specify the name of your S3 bucket here
 export S3_BUCKET_NAME=ragtime-bucket
 
 help:
