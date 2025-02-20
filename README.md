@@ -4,7 +4,7 @@
 ## The Challenge 
 
 The aim of this project is to implement use of an LLM from the Amazon Bedrock Marketplace such that the user can ask the model a question via an HTTP endpoint.
-This is implmented as an AWS serverless Lambda written in Rust. 
+This is implemented as an AWS serverless Lambda written in Rust. 
 
 An added challenge is to implement a [Retrieval Augmented Generation](https://en.wikipedia.org/wiki/Retrieval-augmented_generation) ([RAG](rag.md)) architecture, such that the LLM's responses are enhanced beyond the knowledge of what the base model knows alone.
 
@@ -24,11 +24,9 @@ This project aims to implement this idea, but in Rust.
 
 ## Why Rust?
 
-Cloud services, while useful, eventually engender recurring costs that add up. Python ecosystem libraries are excellent in functionality but in practice often large in size.  Serverless architectures do have memory and size constraints which translate to costs. 
+Cloud services, while useful, eventually engender recurring costs that add up. Python ecosystem libraries are excellent in functionality but in practice often large in size.  Serverless architectures do have memory and size constraints as well as performance considerations.  Because cloud providers often charge by a formula along the lines of (`memory sizing` x `time spent`), a smaller memory footprint and speedy execution will translate to decreased costs over time.
 
-Because Rust compiles down to memory-efficient binaries, it is speedy, less memory-intensive and Lambdas translate into greater performance and cost savings.
-
-It is notable that an author of the Oreilly book [Python for Devops](https://pythondevops.com/) recently wrote [Why I Like Rust Better Than Python](https://podcast.paiml.com/episodes/why-i-like-rust-better-than-python) which advocates for why Rust is an attractive choice over Python.
+Notable that an author of the Oreilly book [Python for Devops](https://pythondevops.com/) recently wrote [Why I Like Rust Better Than Python](https://podcast.paiml.com/episodes/why-i-like-rust-better-than-python) which advocates for why Rust is an attractive choice over Python.
 
 
 
@@ -36,7 +34,7 @@ It is notable that an author of the Oreilly book [Python for Devops](https://pyt
 
  - [X] DONE: AWS Lambda that communicates with LLM via AWS Bedrock
  - [X] DONE: Ability to read, parse, chunk, compute and store embeddings into a local database.
- - [ ] TODO: Retrieval of document embeddings to compare for similarity with a user question for RAG implementation
+ - [ ] TODO: (50% DONE) RAG Retrieval of document embeddings to compare for similarity with a user question and provide context for the prompt.
 
 
 
