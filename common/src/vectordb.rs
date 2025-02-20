@@ -2,7 +2,7 @@ use anyhow::{Context, Error, Result};
 // use aws_config::meta::region::RegionProviderChain;
 use aws_sdk_s3::Client as S3Client;
 use bytes::Bytes;
-use lambda_http::{Body, Request, Response};
+// use lambda_http::{Body, Request, Response};
 use rusqlite::Connection; // Result
 use serde_json::Value;
 use std::env;
