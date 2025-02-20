@@ -1,10 +1,10 @@
 # ragtime
 
 
-## The Challenge 
+## The Challenge
 
 The aim of this project is to implement use of an LLM from the Amazon Bedrock Marketplace such that the user can ask the model a question via an HTTP endpoint.
-This is implemented as an AWS serverless Lambda written in Rust. 
+This is implemented as an AWS serverless Lambda written in Rust.
 
 An added challenge is to implement a [Retrieval Augmented Generation](https://en.wikipedia.org/wiki/Retrieval-augmented_generation) ([RAG](rag.md)) architecture, such that the LLM's responses are enhanced beyond the knowledge of what the base model knows alone.
 
@@ -61,10 +61,26 @@ Notable that an author of the Oreilly book [Python for Devops](https://pythondev
 
 ## Installation and Running the programs
 
-For run instructions, please see the README.md files linked below.
+With Rust, Cargo, Cargo Lambda, and (GNU) Make installed, you can build as follows:
+
+Preprocessing of PDF files:
+```
+make build_vectordb
+./target/release/vectordb_stuff --help
+./target/release/vectordb_stuff --clear-database
+./target/release/vectordb_stuff --load-documents
+```
+
+Building the AWS Lambda and deploying it:
+```
+make build_lambda
+make deploy_lambda
+```
+
+
+```
+For further help, please see the README.md files linked below:
 
  1. [vectordb_stuff](vectordb_stuff/README.md) - containing PDF document processing and the embeddings database.
  2. [lambda_stuff](lambda_stuff/README.md) - AWS lambda handler function.
  3. [common](common/README.md) - code that is shared by the 2 components above.
-
-
