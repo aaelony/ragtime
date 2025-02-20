@@ -1,5 +1,7 @@
 # ragtime
 
+![Build Status](https://github.com/aaelony/ragtime/actions/workflows/ci.yml/badge.svg)
+
 
 ## The Challenge
 

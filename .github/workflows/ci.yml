@@ -1,4 +1,4 @@
-name: Rust Build and Test
+name: Ragtime Build and Test
 
 on:
   push:
