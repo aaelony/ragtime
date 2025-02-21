@@ -193,21 +193,21 @@ impl VectorDb {
         Ok(self.conn.last_insert_rowid())
     }
 
-    pub fn search_similar(&self, query_embedding: &[f32], limit: usize) -> Result<Vec<String>> {
+    pub fn search_similar(&self, query_embedding: &[f64], limit: usize) -> Result<Vec<String>> {
         let mut stmt = self
             .conn
             .prepare("SELECT text, embedding FROM embeddings")?;
 
-        let mut results: Vec<(String, f32)> = Vec::new();
+        let mut results: Vec<(String, f64)> = Vec::new();
 
         let rows = stmt.query_map([], |row| {
             let text: String = row.get(0)?;
             let embedding_bytes: Vec<u8> = row.get(1)?;
 
-            let embedding: Vec<f32> = unsafe {
+            let embedding: Vec<f64> = unsafe {
                 std::slice::from_raw_parts(
-                    embedding_bytes.as_ptr() as *const f32,
-                    embedding_bytes.len() / std::mem::size_of::<f32>(),
+                    embedding_bytes.as_ptr() as *const f64,
+                    embedding_bytes.len() / std::mem::size_of::<f64>(),
                 )
                 .to_vec()
             };
@@ -231,10 +231,10 @@ impl VectorDb {
     }
 } // end of VectorDb impl
 
-pub fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
-    let dot_product: f32 = a.iter().zip(b.iter()).map(|(x, y)| x * y).sum();
-    let norm_a: f32 = a.iter().map(|x| x * x).sum::<f32>().sqrt();
-    let norm_b: f32 = b.iter().map(|x| x * x).sum::<f32>().sqrt();
+pub fn cosine_similarity(a: &[f64], b: &[f64]) -> f64 {
+    let dot_product: f64 = a.iter().zip(b.iter()).map(|(x, y)| x * y).sum();
+    let norm_a: f64 = a.iter().map(|x| x * x).sum::<f64>().sqrt();
+    let norm_b: f64 = b.iter().map(|x| x * x).sum::<f64>().sqrt();
     dot_product / (norm_a * norm_b)
 }
 

@@ -80,7 +80,7 @@ make deploy_lambda
 ```
 
 
-```
+
 For further help, please see the README.md files linked below:
 
  1. [vectordb_stuff](vectordb_stuff/README.md) - containing PDF document processing and the embeddings database.

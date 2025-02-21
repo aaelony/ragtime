@@ -1,18 +1,15 @@
 // use aws_config::BehaviorVersion;
+
 use anyhow::Result;
 use aws_sdk_bedrockruntime::Client as BedrockClient;
 use aws_sdk_bedrockruntime::{
     operation::converse::{ConverseError, ConverseOutput},
     types::{ContentBlock, ConversationRole, Message},
 };
-//use aws_sdk_s3::Client as S3Client;
-// use aws_smithy_types::Blob;
 use chrono;
-use common::embeddings::create_embeddings;
+use common::embeddings::{convert_embeddings_to_f64, create_embeddings};
 use common::vectordb::VectorDb;
-// use lambda_runtime::Error;
 use serde_json::json;
-// use std::env;
 
 // based on examples found here: https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/rustv1/examples/bedrock-runtime/src/bin/converse.rs
 
@@ -72,25 +69,13 @@ pub async fn ask_bedrock(
     let config = aws_config::load_from_env().await;
     let bedrock_client = BedrockClient::new(&config); // bedrock client
 
-    // let embeddings_value = create_embeddings(&question, model_name).await?;
-    // println!(
-    //     "Raw embeddings: {}",
-    //     serde_json::to_string_pretty(&embeddings_value)?
-    // );
-    // // Convert Value to Vec<f32>
-    // let question_embeddings: Vec<f32> = embeddings_value["embedding"] // or whatever the correct field name is
-    //     .as_array()
-    //     .ok_or_else(|| anyhow::anyhow!("Invalid embedding format"))?
-    //     .iter()
-    //     .map(|v| {
-    //         v.as_f64()
-    //             .ok_or_else(|| anyhow::anyhow!("Invalid number in embedding"))
-    //             .map(|f| f as f32)
-    //     })
-    //     .collect::<Result<Vec<f32>, _>>()?;
+    let question_embeddings = create_embeddings(question, model_name).await?;
+    let question_embeddings_f64 = convert_embeddings_to_f64(question_embeddings);
 
+    // Get similar embeddings in the database
     let use_local_db = false; // Setting this to false will download the embeddings from S3 and use them locally.
     let vdb_client = VectorDb::new(use_local_db).await?;
+
     // Assess similarity of question_embeddings to other embeddings in the database
 
     // let similar_texts = vdb_client.search_similar(&question_embeddings, 5)?; // Top 5.

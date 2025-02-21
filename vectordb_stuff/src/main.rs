@@ -6,6 +6,8 @@ use common::embeddings::create_embeddings;
 use common::vectordb::VectorDb;
 use pdftools::{extract_text_from_pdf, get_pdf_filenames};
 
+fn load_documents() {}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = cli::parse_args();
